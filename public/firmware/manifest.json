@@ -1,0 +1,16 @@
+{
+  "name": "LoRa DHT11 TTN Dashboard",
+  "version": "1.0.0",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "lora-dht11-v1.0.0.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
