@@ -22,6 +22,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import type { Telemetry } from "@/lib/telemetry";
+import { FirmwareToolsDialog } from "@/components/ui/FirmwareToolsDialog";
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -159,19 +160,22 @@ export default function Home() {
 									: "-"}
 							</span>
 						</div>
+						<div className="flex flex-wrap gap-2">
+							<button
+								type="button"
+								onClick={loadTelemetry}
+								disabled={refreshing}
+								className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 px-3 py-2 text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
+							>
+								<RefreshCw
+									size={16}
+									className={refreshing ? "animate-spin" : ""}
+								/>
+								Refresh manuel
+							</button>
 
-						<button
-							type="button"
-							onClick={loadTelemetry}
-							disabled={refreshing}
-							className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 px-3 py-2 text-zinc-300 transition hover:bg-zinc-900 disabled:opacity-50"
-						>
-							<RefreshCw
-								size={16}
-								className={refreshing ? "animate-spin" : ""}
-							/>
-							Refresh manuel
-						</button>
+							<FirmwareToolsDialog />
+						</div>
 					</div>
 				</section>
 
