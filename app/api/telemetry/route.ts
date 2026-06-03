@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { supabase } from "@/lib/supabase";
 import { normalizeTelemetry, type Telemetry } from "@/lib/telemetry";
 
@@ -7,13 +8,29 @@ export const dynamic = "force-dynamic";
 const memoryStore: Telemetry[] = [];
 const API_TOKEN = process.env.INGEST_TOKEN;
 
-function unauthorized() {
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+function jsonResponse(body: unknown, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
+  });
 }
 
-function checkToken(request: Request) {
+function isAuthorized(request: Request) {
   if (!API_TOKEN) return true;
-  return request.headers.get("authorization") === `Bearer ${API_TOKEN}`;
+
+  const authorization = request.headers.get("authorization");
+  return authorization === `Bearer ${API_TOKEN}`;
+}
+
+function getLimit(request: Request) {
+  const url = new URL(request.url);
+  const rawLimit = Number(url.searchParams.get("limit") ?? 20);
+
+  if (Number.isNaN(rawLimit)) return 20;
+
+  return Math.min(Math.max(rawLimit, 1), 100);
 }
 
 function debugInfo() {
@@ -29,44 +46,66 @@ function debugInfo() {
 }
 
 export async function GET(request: Request) {
-  if (!checkToken(request)) return unauthorized();
+  const limit = getLimit(request);
 
   if (supabase) {
     const { data, error } = await supabase
       .from("telemetry")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(limit);
 
     if (error) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           ok: false,
+          error: error.message,
           debug: debugInfo(),
           supabaseError: error,
         },
-        { status: 500 }
+        500
       );
     }
 
-    return NextResponse.json({
+    return jsonResponse({
       ok: true,
       debug: debugInfo(),
-      data,
+      data: data ?? [],
     });
   }
 
-  return NextResponse.json({
+  return jsonResponse({
     ok: true,
     debug: debugInfo(),
-    data: memoryStore.slice(-50).reverse(),
+    data: memoryStore.slice(-limit).reverse(),
   });
 }
 
 export async function POST(request: Request) {
-  if (!checkToken(request)) return unauthorized();
+  if (!isAuthorized(request)) {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Unauthorized",
+      },
+      401
+    );
+  }
 
-  const body = await request.json();
+  let body: unknown;
+
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse(
+      {
+        ok: false,
+        error: "Invalid JSON body",
+      },
+      400
+    );
+  }
+
   const item = normalizeTelemetry(body);
 
   if (supabase) {
@@ -77,28 +116,29 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           ok: false,
+          error: error.message,
           debug: debugInfo(),
           itemTriedToInsert: item,
           supabaseError: error,
         },
-        { status: 500 }
+        500
       );
     }
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         ok: true,
         debug: debugInfo(),
         data,
       },
-      { status: 201 }
+      201
     );
   }
 
-  const saved = {
+  const saved: Telemetry = {
     ...item,
     id: crypto.randomUUID(),
     created_at: new Date().toISOString(),
@@ -106,12 +146,12 @@ export async function POST(request: Request) {
 
   memoryStore.push(saved);
 
-  return NextResponse.json(
+  return jsonResponse(
     {
       ok: true,
       debug: debugInfo(),
       data: saved,
     },
-    { status: 201 }
+    201
   );
 }
