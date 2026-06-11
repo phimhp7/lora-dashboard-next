@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Activity,
@@ -127,19 +128,32 @@ export default function Home() {
 		<main className="min-h-screen px-4 py-8 sm:px-8">
 			<div className="mx-auto max-w-6xl space-y-8">
 				<section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-					<div>
-						<Badge className="mb-3 border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
-							ESP32 + LoRa-E5 + TTN
-						</Badge>
+					<div className="flex items-start gap-4">
+						<div className="flex h-30 w-30 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/20 bg-zinc-900/80 shadow-lg shadow-emerald-500/10 sm:h-30 sm:w-30">
+							<Image
+								src="/SAE%202.png"
+								alt="Logo SAE"
+								width={128}
+								height={128}
+								className="h-18 w-18 object-contain sm:h-18 sm:w-18"
+								priority
+							/>
+						</div>
 
-						<h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-							Dashboard couverture LoRa
-						</h1>
+						<div>
+							<Badge className="mb-3 border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+								LORA HIVE SAE S2 2024
+							</Badge>
 
-						<p className="mt-3 max-w-2xl text-zinc-400">
-							Suivi live des uplinks TTN, RSSI, SNR, distance
-							estimée, température et humidité.
-						</p>
+							<h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
+								Dashboard couverture LoRa
+							</h1>
+
+							<p className="mt-3 max-w-2xl text-zinc-400">
+								Suivi live des uplinks TTN, RSSI, SNR, distance
+								estimée, température et humidité.
+							</p>
+						</div>
 					</div>
 
 					<div className="flex flex-col items-start gap-2 text-sm text-zinc-500 sm:items-end">
