@@ -142,7 +142,7 @@ export default function Home() {
 
 						<div>
 							<Badge className="mb-3 border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
-								LORA HIVE SAE S2 2024
+								LORA HIVE SAE S2 2026
 							</Badge>
 
 							<h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
